@@ -24,3 +24,41 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Theme variants using data-theme attribute for explicit control */
+:root[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #0b0b0b;
+  --muted: #6b7280;
+  --card-bg: #ffffff;
+  --border-color: #e5e7eb;
+}
+
+:root[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #f5f5f5;
+  --muted: #9ca3af;
+  --card-bg: #0f1720;
+  --border-color: #1f2937;
+}
+
+/* Utility classes referencing CSS variables so components can use consistent theming */
+.bg-foreground { background: var(--foreground) !important; }
+.text-background { color: var(--background) !important; }
+.bg-background { background: var(--background) !important; }
+.text-foreground { color: var(--foreground) !important; }
+.card-bg { background: var(--card-bg) !important; }
+.border-muted { border-color: var(--border-color) !important; }
+
+/* small helpers for focus ring that use CSS variables */
+.focus-ring {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+}
+
+/* Theme toggle placement */
+.theme-toggle-root {
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  z-index: 60;
+}
