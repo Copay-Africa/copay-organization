@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuthLogin } from "../../hooks/useAuthLogin";
 import { useRouter } from "next/navigation";
-import { Card } from "../ui/Card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/Card";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 
@@ -27,45 +27,135 @@ export default function LoginForm() {
   }, [mutation.status, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50">
-      <Card className="w-full max-w-md">
-        <form onSubmit={onSubmit} className="space-y-4">
-          <h2 className="text-2xl font-semibold">Organization Login</h2>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium">Phone</label>
-            <Input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+250788111223"
-              className="mb-2"
-            />
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      {/* Background pattern */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+      
+      <div className="relative w-full max-w-md">
+        {/* Logo/Brand section */}
+        <div className="text-center mb-8">
+          <div className="mx-auto h-12 w-12 rounded-full bg-primary flex items-center justify-center mb-4">
+            <svg
+              className="h-6 w-6 text-primary-foreground"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
+              />
+            </svg>
           </div>
+          <h1 className="text-2xl font-bold tracking-tight">Co-Pay</h1>
+          <p className="text-muted-foreground text-sm">Cooperative Management System</p>
+        </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium">PIN</label>
-            <Input
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-              placeholder="1234"
-              type="password"
-              className="mb-2"
-            />
-          </div>
+        <Card className="shadow-xl border-0 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-semibold tracking-tight">
+              Welcome back
+            </CardTitle>
+            <CardDescription>
+              Sign in to your organization account
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <form onSubmit={onSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label htmlFor="phone" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Phone Number
+                </label>
+                <Input
+                  id="phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+250 788 111 223"
+                  type="tel"
+                  autoComplete="tel"
+                  required
+                />
+              </div>
 
-          <Button type="submit" className="w-full" disabled={mutation.status === "pending"}>
-            {mutation.status === "pending" ? "Signing in…" : "Sign in"}
-          </Button>
+              <div className="space-y-2">
+                <label htmlFor="pin" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  PIN
+                </label>
+                <Input
+                  id="pin"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  placeholder="Enter your 4-digit PIN"
+                  type="password"
+                  autoComplete="current-password"
+                  maxLength={4}
+                  required
+                />
+              </div>
 
-          {mutation.status === "error" && (
-            <p className="mt-2 text-sm text-red-600">{(mutation.error as Error).message}</p>
-          )}
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={mutation.status === "pending"}
+                size="lg"
+              >
+                {mutation.status === "pending" ? (
+                  <>
+                    <svg className="mr-2 h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign in"
+                )}
+              </Button>
 
-          {mutation.status === "success" && (
-            <p className="mt-2 text-sm text-green-600">Login successful</p>
-          )}
-        </form>
-      </Card>
+              {/* Error message */}
+              {mutation.status === "error" && (
+                <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3">
+                  <div className="flex items-center gap-2">
+                    <svg className="h-4 w-4 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm text-destructive font-medium">
+                      {(mutation.error as Error).message}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Success message */}
+              {mutation.status === "success" && (
+                <div className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950">
+                  <div className="flex items-center gap-2">
+                    <svg className="h-4 w-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                      Login successful! Redirecting...
+                    </p>
+                  </div>
+                </div>
+              )}
+            </form>
+
+            {/* Footer */}
+            <div className="mt-6 text-center text-xs text-muted-foreground">
+              <p>
+                Need help?{" "}
+                <button className="underline underline-offset-4 hover:text-primary transition-colors">
+                  Contact support
+                </button>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
