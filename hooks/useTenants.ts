@@ -1,5 +1,5 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getToken } from "../lib/authClient";
 
 export type Tenant = {
@@ -28,11 +28,52 @@ export type TenantsResponse = {
   };
 };
 
-async function fetchTenants(page = 1, limit = 10) {
+export type CreateUserBody = {
+  phone: string;
+  pin: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  role: 'TENANT' | 'ORGANIZATION_ADMIN';
+  cooperativeId?: string;
+};
+
+export type UpdateUserStatusBody = {
+  isActive: boolean;
+};
+
+export type UserStats = {
+  totalUsers: number;
+  totalTenants: number;
+  totalOrgAdmins: number;
+  totalSuperAdmins: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  recentRegistrations: number;
+};
+
+export type UserFilters = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: string;
+  status?: string;
+};
+
+async function fetchTenants(filters: UserFilters = {}) {
   const token = getToken();
-  const qs = `?page=${page}&limit=${limit}`;
+  const params = new URLSearchParams();
+  
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params.append(key, String(value));
+    }
+  });
+
   const base = process.env.NEXT_PUBLIC_API_BASE ?? "";
-  const url = base ? `${base.replace(/\/$/, "")}/users${qs}` : `/users${qs}`;
+  const url = base 
+    ? `${base.replace(/\/$/, "")}/users?${params.toString()}` 
+    : `/users?${params.toString()}`;
 
   const res = await fetch(url, {
     headers: {
@@ -56,17 +97,135 @@ async function fetchTenants(page = 1, limit = 10) {
       );
     }
 
-    throw new Error(text || `Failed to fetch tenants: ${res.status}`);
+    throw new Error(text || `Failed to fetch users: ${res.status}`);
   }
 
   const data = (await res.json()) as TenantsResponse;
   return data;
 }
 
-export function useTenants(page = 1, limit = 10) {
+async function createUser(body: CreateUserBody) {
+  const token = getToken();
+  const base = process.env.NEXT_PUBLIC_API_BASE ?? "";
+  const url = base 
+    ? `${base.replace(/\/$/, "")}/users` 
+    : `/users`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Failed to create user: ${res.status}`);
+  }
+
+  const data = (await res.json()) as Tenant;
+  return data;
+}
+
+async function updateUserStatus(id: string, body: UpdateUserStatusBody) {
+  const token = getToken();
+  const base = process.env.NEXT_PUBLIC_API_BASE ?? "";
+  const url = base 
+    ? `${base.replace(/\/$/, "")}/users/${id}/status` 
+    : `/users/${id}/status`;
+
+  const res = await fetch(url, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Failed to update user status: ${res.status}`);
+  }
+
+  const data = (await res.json()) as Tenant;
+  return data;
+}
+
+async function fetchUserStats() {
+  const token = getToken();
+  const base = process.env.NEXT_PUBLIC_API_BASE ?? "";
+  const url = base 
+    ? `${base.replace(/\/$/, "")}/users/stats` 
+    : `/users/stats`;
+
+  const res = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Failed to fetch user stats: ${res.status}`);
+  }
+
+  const data = (await res.json()) as UserStats;
+  return data;
+}
+
+export function useTenants(filters: UserFilters = {}) {
+  // Set default values if not provided
+  const finalFilters = {
+    page: 1,
+    limit: 10,
+    ...filters,
+  };
+
   return useQuery<TenantsResponse, Error>({
-    queryKey: ["tenants", page, limit],
-    queryFn: () => fetchTenants(page, limit),
+    queryKey: ["tenants", finalFilters],
+    queryFn: () => fetchTenants(finalFilters),
     staleTime: 1000 * 60,
+  });
+}
+
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+  
+  return useMutation<Tenant, Error, CreateUserBody>({
+    mutationFn: (body) => createUser(body),
+    onSuccess: () => {
+      // Invalidate and refetch users list
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      // Invalidate user stats to refresh them
+      queryClient.invalidateQueries({ queryKey: ["userStats"] });
+    },
+  });
+}
+
+export function useUpdateUserStatus() {
+  const queryClient = useQueryClient();
+  
+  return useMutation<Tenant, Error, { id: string; body: UpdateUserStatusBody }>({
+    mutationFn: ({ id, body }) => updateUserStatus(id, body),
+    onSuccess: () => {
+      // Invalidate and refetch users list
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      // Invalidate user stats to refresh them
+      queryClient.invalidateQueries({ queryKey: ["userStats"] });
+    },
+  });
+}
+
+export function useUserStats() {
+  return useQuery<UserStats, Error>({
+    queryKey: ["userStats"],
+    queryFn: () => fetchUserStats(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }

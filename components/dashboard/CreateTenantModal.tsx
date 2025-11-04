@@ -40,12 +40,12 @@ export default function CreateTenantModal({ open, onClose }: { open: boolean; on
             <form onSubmit={onSubmit} className="space-y-3">
                 <div>
                     <label className="block text-sm mb-1">Phone</label>
-                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+250788111224" />
+                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+250..." />
                 </div>
 
                 <div>
                     <label className="block text-sm mb-1">PIN</label>
-                    <Input value={pin} onChange={(e) => setPin(e.target.value)} placeholder="1234" />
+                    <Input value={pin} onChange={(e) => setPin(e.target.value)} placeholder="Enter PIN" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">

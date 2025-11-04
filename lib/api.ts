@@ -15,7 +15,7 @@ export async function postJson<T = any>(url: string, body: unknown, token?: stri
   let data: any = undefined;
   try {
     data = text ? JSON.parse(text) : undefined;
-  } catch (err) {
+  } catch {
     // non-json response
     data = text;
   }

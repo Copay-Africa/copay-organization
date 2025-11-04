@@ -6,22 +6,7 @@ import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Card } from "../ui/Card";
 import Select from "../ui/Select";
-import Badge from "../ui/Badge";
-
-const STATUS_OPTIONS = [
-  { value: "", label: "All Status" },
-  { value: "OPEN", label: "Open" },
-  { value: "IN_PROGRESS", label: "In Progress" },
-  { value: "RESOLVED", label: "Resolved" },
-  { value: "CLOSED", label: "Closed" },
-];
-
-const PRIORITY_OPTIONS = [
-  { value: "", label: "All Priorities" },
-  { value: "HIGH", label: "High" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "LOW", label: "Low" },
-];
+import { Badge } from "../ui/Badge";
 
 export default function ComplaintsList({ onComplaintClick }: { onComplaintClick?: (id: string) => void }) {
   const [filters, setFilters] = useState<ComplaintFilters>({
@@ -172,22 +157,21 @@ export default function ComplaintsList({ onComplaintClick }: { onComplaintClick?
               value={filters.status || ""}
               onChange={(e) => updateFilter("status", e.target.value)}
             >
-              {STATUS_OPTIONS.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <option value="">All Status</option>
+              <option value="OPEN">Open</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="RESOLVED">Resolved</option>
+              <option value="CLOSED">Closed</option>
             </Select>
 
             <Select
               value={filters.priority || ""}
               onChange={(e) => updateFilter("priority", e.target.value)}
             >
-              {PRIORITY_OPTIONS.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <option value="">All Priorities</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
             </Select>
 
             <div className="flex gap-2">

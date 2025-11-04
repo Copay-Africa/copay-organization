@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import clsx from "clsx";
+import { cn } from "../../lib/utils";
 
 export function Modal({ 
   open, 
@@ -41,7 +41,7 @@ export function Modal({
       
       {/* Modal content with animation */}
       <div 
-        className={clsx(
+        className={cn(
           "relative z-10 w-full max-w-2xl animate-in bg-background border border-border rounded-xl shadow-2xl",
           className
         )}

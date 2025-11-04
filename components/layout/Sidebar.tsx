@@ -8,10 +8,7 @@ const items = [
   ["/dashboard", "Dashboard"],
   ["/dashboard/tenants", "Tenants"],
   ["/dashboard/payments", "Payments"],
-  ["/dashboard/rooms", "Rooms"],
-  ["/dashboard/announcements", "Announcements"],
-  ["/dashboard/complaints", "Complaints"],
-  ["/dashboard/settings", "Settings"],
+  ["/dashboard/complaints", "Complaints"]
 ];
 
 export default function Sidebar() {
@@ -26,9 +23,9 @@ export default function Sidebar() {
         {items.map(([href, label]) => {
           const isActive = pathname === href;
           return (
-            <Link 
-              key={String(href)} 
-              href={String(href)} 
+            <Link
+              key={String(href)}
+              href={String(href)}
               className={clsx(
                 "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive

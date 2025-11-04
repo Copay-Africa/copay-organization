@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import clsx from "clsx";
+import { cn } from "../../lib/utils";
 
 export function Table<T>({
   columns,
@@ -45,7 +45,7 @@ export function TableHeader({
   className?: string;
 }) {
   return (
-    <thead className={clsx("[&_tr]:border-b", className)}>
+    <thead className={cn("[&_tr]:border-b", className)}>
       {children}
     </thead>
   );
@@ -59,7 +59,7 @@ export function TableBody({
   className?: string;
 }) {
   return (
-    <tbody className={clsx("[&_tr:last-child]:border-0", className)}>
+    <tbody className={cn("[&_tr:last-child]:border-0", className)}>
       {children}
     </tbody>
   );
@@ -73,7 +73,7 @@ export function TableRow({
   className?: string;
 }) {
   return (
-    <tr className={clsx(
+    <tr className={cn(
       "border-b border-border transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
       className
     )}>
@@ -90,7 +90,7 @@ export function TableHead({
   className?: string;
 }) {
   return (
-    <th className={clsx(
+    <th className={cn(
       "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
       className
     )}>
@@ -107,7 +107,7 @@ export function TableCell({
   className?: string;
 }) {
   return (
-    <td className={clsx("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}>
+    <td className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}>
       {children}
     </td>
   );

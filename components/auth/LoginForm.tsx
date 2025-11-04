@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/Card";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
+import { Label } from "../ui/Label";
 
 export default function LoginForm() {
   const [phone, setPhone] = useState("+250788111223");
@@ -66,9 +67,9 @@ export default function LoginForm() {
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label htmlFor="phone" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                <Label htmlFor="phone">
                   Phone Number
-                </label>
+                </Label>
                 <Input
                   id="phone"
                   value={phone}
@@ -81,9 +82,9 @@ export default function LoginForm() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="pin" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                <Label htmlFor="pin">
                   PIN
-                </label>
+                </Label>
                 <Input
                   id="pin"
                   value={pin}

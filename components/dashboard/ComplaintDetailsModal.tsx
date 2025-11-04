@@ -5,13 +5,6 @@ import Modal from "../ui/Modal";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 
-const STATUS_OPTIONS = [
-  { value: "OPEN", label: "Open" },
-  { value: "IN_PROGRESS", label: "In Progress" },
-  { value: "RESOLVED", label: "Resolved" },
-  { value: "CLOSED", label: "Closed" },
-];
-
 export default function ComplaintDetailsModal({ 
   complaintId, 
   open, 
@@ -210,11 +203,10 @@ export default function ComplaintDetailsModal({
                       required
                     >
                       <option value="">Select status</option>
-                      {STATUS_OPTIONS.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
+                      <option value="OPEN">Open</option>
+                      <option value="IN_PROGRESS">In Progress</option>
+                      <option value="RESOLVED">Resolved</option>
+                      <option value="CLOSED">Closed</option>
                     </select>
                   </div>
 
