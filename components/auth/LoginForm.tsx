@@ -8,14 +8,43 @@ import { Button } from "../ui/Button";
 import { Label } from "../ui/Label";
 
 export default function LoginForm() {
-  const [phone, setPhone] = useState("+250788111223");
-  const [pin, setPin] = useState("2345");
+  const [phone, setPhone] = useState("");
+  const [pin, setPin] = useState("");
+  const [validationErrors, setValidationErrors] = useState<{phone?: string; pin?: string}>({});
 
   const mutation = useAuthLogin();
 
+  const validateForm = () => {
+    const errors: {phone?: string; pin?: string} = {};
+    
+    // Phone validation
+    if (!phone) {
+      errors.phone = "Phone number is required";
+    } else if (!/^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s/g, ''))) {
+      errors.phone = "Please enter a valid phone number";
+    }
+    
+    // PIN validation
+    if (!pin) {
+      errors.pin = "PIN is required";
+    } else if (!/^\d{4,6}$/.test(pin)) {
+      errors.pin = "PIN must be 4-6 digits";
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate({ phone, pin });
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    // Sanitize inputs
+    const sanitizedPhone = phone.replace(/\s/g, '');
+    mutation.mutate({ phone: sanitizedPhone, pin });
   };
 
   const router = useRouter();
@@ -73,12 +102,21 @@ export default function LoginForm() {
                 <Input
                   id="phone"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    if (validationErrors.phone) {
+                      setValidationErrors(prev => ({ ...prev, phone: undefined }));
+                    }
+                  }}
                   placeholder="+250 788 111 223"
                   type="tel"
                   autoComplete="tel"
                   required
+                  className={validationErrors.phone ? "border-destructive" : ""}
                 />
+                {validationErrors.phone && (
+                  <p className="text-sm text-destructive">{validationErrors.phone}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -88,13 +126,23 @@ export default function LoginForm() {
                 <Input
                   id="pin"
                   value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  placeholder="Enter your 4-digit PIN"
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, ''); // Only digits
+                    setPin(value);
+                    if (validationErrors.pin) {
+                      setValidationErrors(prev => ({ ...prev, pin: undefined }));
+                    }
+                  }}
+                  placeholder="Enter your PIN"
                   type="password"
                   autoComplete="current-password"
-                  maxLength={4}
+                  maxLength={6}
                   required
+                  className={validationErrors.pin ? "border-destructive" : ""}
                 />
+                {validationErrors.pin && (
+                  <p className="text-sm text-destructive">{validationErrors.pin}</p>
+                )}
               </div>
 
               <Button 

@@ -36,13 +36,21 @@ export async function loginRequest(body: LoginBody) {
 
 export function saveToken(token: string, opts?: { expiresDays?: number }) {
     const days = opts?.expiresDays ?? 7;
-    Cookies.set(TOKEN_KEY, token, { expires: days, sameSite: "lax" });
+    Cookies.set(TOKEN_KEY, token, { 
+        expires: days, 
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+        httpOnly: false // Note: Cannot be httpOnly for client-side access
+    });
 }
 
 export function saveCooperativeId(id: string) {
     if (!id) return;
-    // store cooperative id in a non-httpOnly cookie so middleware and client can access it
-    Cookies.set(COOP_KEY, id, { sameSite: "lax" });
+    // store cooperative id in a secure cookie
+    Cookies.set(COOP_KEY, id, { 
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production"
+    });
 }
 
 export function getCooperativeId(): string | undefined {
@@ -68,4 +76,26 @@ export function clearToken() {
 
 export function getToken(): string | undefined {
     return Cookies.get(TOKEN_KEY);
+}
+
+export function isTokenExpired(token: string): boolean {
+    try {
+        // Basic JWT structure check
+        const parts = token.split('.');
+        if (parts.length !== 3) return true;
+        
+        // Decode payload (base64)
+        const payload = JSON.parse(atob(parts[1]));
+        const now = Math.floor(Date.now() / 1000);
+        
+        return payload.exp && payload.exp < now;
+    } catch {
+        return true; // If we can't parse, consider it expired
+    }
+}
+
+export function isAuthenticated(): boolean {
+    const token = getToken();
+    if (!token) return false;
+    return !isTokenExpired(token);
 }
