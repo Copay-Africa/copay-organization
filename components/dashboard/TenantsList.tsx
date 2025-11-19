@@ -21,18 +21,34 @@ export default function TenantsList() {
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
-  const [roleFilter, setRoleFilter] = React.useState("all");
+  const [roleFilter, setRoleFilter] = React.useState("TENANT");
   const [currentPage, setCurrentPage] = React.useState(1);
   
-  const filters = React.useMemo(() => ({
-    page: currentPage,
-    limit: 10,
-    ...(searchTerm && { search: searchTerm }),
-    ...(statusFilter !== "all" && { status: statusFilter }),
-    ...(roleFilter !== "all" && { role: roleFilter }),
-  }), [currentPage, searchTerm, statusFilter, roleFilter]);
+  const filters = React.useMemo(() => {
+    const filterObj = {
+      page: currentPage,
+      limit: 10,
+      ...(searchTerm && { search: searchTerm }),
+      ...(statusFilter !== "all" && { status: statusFilter }),
+      ...(roleFilter !== "all" && { role: roleFilter }),
+    };
+    
+    // Debug logging to see what filters are being applied
+    console.log('TenantsList filters:', filterObj);
+    
+    return filterObj;
+  }, [currentPage, searchTerm, statusFilter, roleFilter]);
 
   const { data, isLoading, isError, error } = useTenants(filters);
+  
+  // Debug logging to see what data is returned
+  React.useEffect(() => {
+    if (data) {
+      console.log('TenantsList data:', data);
+      console.log('Total count:', data.meta.total);
+      console.log('Users with roles:', data.data.map(u => ({ id: u.id, role: u.role, firstName: u.firstName })));
+    }
+  }, [data]);
   const updateUserStatusMutation = useUpdateUserStatus();
 
   const handleStatusChange = (userId: string, isActive: boolean) => {
@@ -80,13 +96,22 @@ export default function TenantsList() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5" />
-              Users Management
-            </CardTitle>
+            <div className="space-y-2">
+              <CardTitle className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5" />
+                Tenants Management
+              </CardTitle>
+              {data && (
+                <p className="text-sm text-muted-foreground">
+                  Total: <span className="font-medium">{data.meta.total.toLocaleString()}</span> tenants
+                  {statusFilter !== "all" && ` (filtered by ${statusFilter})`}
+                  {roleFilter !== "TENANT" && ` (showing ${roleFilter.toLowerCase().replace('_', ' ')}s)`}
+                </p>
+              )}
+            </div>
             <Button onClick={() => setIsCreateModalOpen(true)}>
               <UserPlus className="h-4 w-4 mr-2" />
-              Add User
+              Add Tenant
             </Button>
           </div>
         </CardHeader>
@@ -97,7 +122,7 @@ export default function TenantsList() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search users by name, phone, or email..."
+                  placeholder="Search tenants by name, phone, or email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -109,8 +134,8 @@ export default function TenantsList() {
                 <SelectValue placeholder="Role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="TENANT">Tenants</SelectItem>
+                <SelectItem value="TENANT">Tenants Only</SelectItem>
+                <SelectItem value="all">All Users</SelectItem>
                 <SelectItem value="ORGANIZATION_ADMIN">Org Admins</SelectItem>
               </SelectContent>
             </Select>
@@ -168,7 +193,7 @@ export default function TenantsList() {
                 ) : data?.data.length === 0 ? (
                   <tr className="border-b border-border transition-colors">
                     <td colSpan={6} className="h-32 text-center text-muted-foreground p-4">
-                      No users found
+                      {roleFilter === "TENANT" ? "No tenants found" : "No users found"}
                     </td>
                   </tr>
                 ) : (
@@ -263,7 +288,7 @@ export default function TenantsList() {
               <div className="text-sm text-muted-foreground">
                 Showing {((data.meta.page - 1) * data.meta.limit) + 1} to{" "}
                 {Math.min(data.meta.page * data.meta.limit, data.meta.total)} of{" "}
-                {data.meta.total} users
+                {data.meta.total} {roleFilter === "TENANT" ? "tenants" : "users"}
               </div>
               <div className="flex items-center space-x-2">
                 <Button
@@ -288,7 +313,7 @@ export default function TenantsList() {
         </CardContent>
       </Card>
 
-      {/* Create User Modal */}
+      {/* Create Tenant Modal */}
       {isCreateModalOpen && (
         <CreateTenantModal 
           open={isCreateModalOpen} 

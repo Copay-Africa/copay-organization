@@ -75,6 +75,9 @@ async function fetchTenants(filters: UserFilters = {}) {
     ? `${base.replace(/\/$/, "")}/users?${params.toString()}` 
     : `/users?${params.toString()}`;
 
+  console.log('🔍 Fetching tenants from:', url);
+  console.log('🔍 Filters applied:', filters);
+
   const res = await fetch(url, {
     headers: {
       Accept: "application/json",
@@ -101,6 +104,7 @@ async function fetchTenants(filters: UserFilters = {}) {
   }
 
   const data = (await res.json()) as TenantsResponse;
+  console.log('🔍 API Response:', data);
   return data;
 }
 
@@ -163,6 +167,8 @@ async function fetchUserStats() {
     ? `${base.replace(/\/$/, "")}/users/stats` 
     : `/users/stats`;
 
+  console.log('📊 Fetching user stats from:', url);
+
   const res = await fetch(url, {
     headers: {
       Accept: "application/json",
@@ -176,6 +182,7 @@ async function fetchUserStats() {
   }
 
   const data = (await res.json()) as UserStats;
+  console.log('📊 User stats response:', data);
   return data;
 }
 

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
-import { useUserStats } from "../../hooks/useTenants";
+import { useUserStats, useTenants } from "../../hooks/useTenants";
 import { usePaymentStats } from "../../hooks/usePaymentStats";
 import { useComplaintStats } from "../../hooks/useComplaintStats";
 import { Badge } from "../../components/ui/Badge";
@@ -58,6 +58,68 @@ export default function DashboardPage() {
   const { data: userStats, isLoading: userStatsLoading } = useUserStats();
   const { data: paymentStats, isLoading: paymentStatsLoading } = usePaymentStats();
   const { data: complaintStats, isLoading: complaintStatsLoading } = useComplaintStats();
+  
+  // Also fetch tenants directly to get accurate count
+  const { data: tenantsData, isLoading: tenantsLoading } = useTenants({ 
+    role: "TENANT", 
+    limit: 100 // Get more data to ensure we capture all tenants
+  });
+  
+  // Also fetch all users to see the difference
+  const { data: allUsersData } = useTenants({ 
+    limit: 100 // Get all users without role filter
+  });
+
+  // Debug logging for user stats
+  React.useEffect(() => {
+    console.log('=== DASHBOARD DEBUG ===');
+    if (userStats) {
+      console.log('userStats from /users/stats:', userStats);
+      console.log('userStats.totalTenants:', userStats.totalTenants);
+    }
+    if (tenantsData) {
+      console.log('tenantsData from /users?role=TENANT:', tenantsData);
+      console.log('tenantsData.meta.total:', tenantsData.meta.total);
+      console.log('tenantsData.data length:', tenantsData.data.length);
+      console.log('First few tenants:', tenantsData.data.slice(0, 3));
+    }
+    if (allUsersData) {
+      console.log('allUsersData from /users (no filter):', allUsersData);
+      console.log('allUsersData.meta.total:', allUsersData.meta.total);
+      console.log('All users by role:', 
+        allUsersData.data.reduce((acc, user) => {
+          const role = user.role || 'NO_ROLE';
+          acc[role] = (acc[role] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      );
+    }
+    console.log('=== END DEBUG ===');
+  }, [userStats, tenantsData, allUsersData]);
+
+  // Use the direct tenant count if available and valid, fallback to userStats
+  const getTenantCount = () => {
+    // If we have tenant data and it's not loading, use that count
+    if (tenantsData && !tenantsLoading) {
+      return tenantsData.meta.total;
+    }
+    
+    // If we have all users data, manually count tenants
+    if (allUsersData) {
+      const tenantCount = allUsersData.data.filter(user => 
+        user.role === 'TENANT' || user.role === 'tenant'
+      ).length;
+      if (tenantCount > 0) {
+        console.log('🔧 Using manual tenant count from all users:', tenantCount);
+        return tenantCount;
+      }
+    }
+    
+    // Otherwise fallback to user stats
+    return userStats?.totalTenants ?? 0;
+  };
+
+  const tenantCount = getTenantCount();
 
   return (
     <div className="space-y-8">
@@ -73,10 +135,10 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Tenants"
-          value={userStats?.totalTenants || 0}
+          value={userStatsLoading && tenantsLoading ? "Loading..." : tenantCount.toLocaleString()}
           change={`${userStats?.recentRegistrations || 0} new this month`}
           icon={Users}
-          isLoading={userStatsLoading}
+          isLoading={userStatsLoading && tenantsLoading}
         />
         
         <StatCard
@@ -89,11 +151,14 @@ export default function DashboardPage() {
 
         <StatCard
           title="Total Revenue"
-          value={paymentStats?.summary.totalAmount 
-            ? formatCurrency(paymentStats.summary.totalAmount) 
-            : 'RWF 0'
-          }
-          change={`${paymentStats?.summary.totalPayments || 0} payments`}
+          value={(() => {
+            // Calculate revenue only from completed payments
+            const completedPaymentsTotal = paymentStats?.statusBreakdown
+              .find(status => status.status === 'COMPLETED')?.totalAmount || 0;
+            return formatCurrency(completedPaymentsTotal);
+          })()}
+          change={`${paymentStats?.statusBreakdown
+            .find(status => status.status === 'COMPLETED')?.count || 0} completed payments`}
           icon={DollarSign}
           isLoading={paymentStatsLoading}
         />
@@ -108,7 +173,55 @@ export default function DashboardPage() {
       </div>
 
       {/* Detailed Sections */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* User Overview */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              User Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {userStatsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex justify-between items-center p-3 border rounded">
+                    <span className="text-sm font-medium">Tenants</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {(userStats?.totalTenants || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 border rounded">
+                    <span className="text-sm font-medium">Organization Admins</span>
+                    <span className="text-lg font-bold text-green-600">
+                      {(userStats?.totalOrgAdmins || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 border rounded">
+                    <span className="text-sm font-medium">Active Users</span>
+                    <span className="text-lg font-bold text-emerald-600">
+                      {(userStats?.activeUsers || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 border rounded">
+                    <span className="text-sm font-medium">Inactive Users</span>
+                    <span className="text-lg font-bold text-red-600">
+                      {(userStats?.inactiveUsers || 0).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Payment Overview */}
         <Card>
           <CardHeader>
@@ -132,12 +245,13 @@ export default function DashboardPage() {
                     <p className="text-2xl font-bold">{paymentStats?.summary.totalPayments || 0}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Average Amount</p>
+                    <p className="text-sm text-muted-foreground">Completed Revenue</p>
                     <p className="text-2xl font-bold">
-                      {paymentStats?.summary.averageAmount 
-                        ? formatCurrency(paymentStats.summary.averageAmount)
-                        : 'RWF 0'
-                      }
+                      {(() => {
+                        const completedPaymentsTotal = paymentStats?.statusBreakdown
+                          .find(status => status.status === 'COMPLETED')?.totalAmount || 0;
+                        return formatCurrency(completedPaymentsTotal);
+                      })()}
                     </p>
                   </div>
                 </div>

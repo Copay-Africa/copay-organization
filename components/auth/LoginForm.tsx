@@ -79,7 +79,7 @@ export default function LoginForm() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Co-Pay</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Copay</h1>
           <p className="text-muted-foreground text-sm">Cooperative Management System</p>
         </div>
 

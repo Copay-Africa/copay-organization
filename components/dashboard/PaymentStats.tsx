@@ -94,14 +94,24 @@ export default function PaymentStats() {
       ) : stats ? (
         <>
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="p-6 text-center">
               <div className="text-2xl font-bold">{stats.summary.totalPayments.toLocaleString()}</div>
               <div className="text-muted">Total Payments</div>
             </Card>
             <Card className="p-6 text-center">
               <div className="text-2xl font-bold">{formatCurrency(stats.summary.totalAmount)}</div>
-              <div className="text-muted">Total Amount</div>
+              <div className="text-muted">Total Amount (All)</div>
+            </Card>
+            <Card className="p-6 text-center border-green-200 bg-green-50">
+              <div className="text-2xl font-bold text-green-700">
+                {(() => {
+                  const completedPaymentsTotal = stats.statusBreakdown
+                    .find(status => status.status === 'COMPLETED')?.totalAmount || 0;
+                  return formatCurrency(completedPaymentsTotal);
+                })()}
+              </div>
+              <div className="text-green-600 font-medium">Completed Revenue</div>
             </Card>
             <Card className="p-6 text-center">
               <div className="text-2xl font-bold">{formatCurrency(stats.summary.averageAmount)}</div>
