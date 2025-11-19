@@ -58,14 +58,18 @@ export type UserFilters = {
   search?: string;
   role?: string;
   status?: string;
+  cooperativeId?: string;
 };
 
 async function fetchTenants(filters: UserFilters = {}) {
   const token = getToken();
   const params = new URLSearchParams();
   
+  // Only include parameters that the API accepts
+  const allowedParams = ['page', 'limit', 'search', 'status'];
+  
   Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && value !== '' && allowedParams.includes(key)) {
       params.append(key, String(value));
     }
   });
@@ -77,6 +81,7 @@ async function fetchTenants(filters: UserFilters = {}) {
 
   console.log('🔍 Fetching tenants from:', url);
   console.log('🔍 Filters applied:', filters);
+  console.log('🔍 Allowed params sent:', Object.fromEntries(params));
 
   const res = await fetch(url, {
     headers: {

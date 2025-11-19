@@ -7,6 +7,7 @@ import clsx from "clsx";
 const items = [
   ["/dashboard", "Dashboard"],
   ["/dashboard/tenants", "Tenants"],
+  ["/rooms", "Rooms"],
   ["/dashboard/payments", "Payments"],
   ["/dashboard/complaints", "Complaints"]
 ];

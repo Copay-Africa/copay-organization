@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useTenants, useUpdateUserStatus } from "../../hooks/useTenants";
+import { getCooperativeId } from "../../lib/authClient";
 // Using native HTML table elements with Tailwind styling
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
@@ -24,31 +25,55 @@ export default function TenantsList() {
   const [roleFilter, setRoleFilter] = React.useState("TENANT");
   const [currentPage, setCurrentPage] = React.useState(1);
   
+  // Get current cooperative context
+  const cooperativeId = getCooperativeId();
+  
   const filters = React.useMemo(() => {
     const filterObj = {
       page: currentPage,
       limit: 10,
       ...(searchTerm && { search: searchTerm }),
       ...(statusFilter !== "all" && { status: statusFilter }),
-      ...(roleFilter !== "all" && { role: roleFilter }),
+      // Remove role and cooperativeId from API call - will filter client-side
     };
     
     // Debug logging to see what filters are being applied
     console.log('TenantsList filters:', filterObj);
     
     return filterObj;
-  }, [currentPage, searchTerm, statusFilter, roleFilter]);
+  }, [currentPage, searchTerm, statusFilter, cooperativeId]);
 
   const { data, isLoading, isError, error } = useTenants(filters);
   
+  // Filter data on client side since API doesn't support role filtering
+  const filteredData = React.useMemo(() => {
+    if (!data?.data) return data;
+    
+    let filtered = data.data;
+    
+    // Filter by role if not "all"
+    if (roleFilter !== "all") {
+      filtered = filtered.filter(user => user.role === roleFilter);
+    }
+    
+    return {
+      ...data,
+      data: filtered,
+      meta: {
+        ...data.meta,
+        total: filtered.length // Update total count for filtered results
+      }
+    };
+  }, [data, roleFilter]);
+  
   // Debug logging to see what data is returned
   React.useEffect(() => {
-    if (data) {
-      console.log('TenantsList data:', data);
-      console.log('Total count:', data.meta.total);
-      console.log('Users with roles:', data.data.map(u => ({ id: u.id, role: u.role, firstName: u.firstName })));
+    if (filteredData) {
+      console.log('TenantsList filtered data:', filteredData);
+      console.log('Total count:', filteredData.meta.total);
+      console.log('Users with roles:', filteredData.data.map(u => ({ id: u.id, role: u.role, firstName: u.firstName })));
     }
-  }, [data]);
+  }, [filteredData]);
   const updateUserStatusMutation = useUpdateUserStatus();
 
   const handleStatusChange = (userId: string, isActive: boolean) => {
@@ -190,14 +215,14 @@ export default function TenantsList() {
                       <td className="p-4 align-middle"><Skeleton className="h-8 w-8" /></td>
                     </tr>
                   ))
-                ) : data?.data.length === 0 ? (
+                ) : filteredData?.data.length === 0 ? (
                   <tr className="border-b border-border transition-colors">
                     <td colSpan={6} className="h-32 text-center text-muted-foreground p-4">
                       {roleFilter === "TENANT" ? "No tenants found" : "No users found"}
                     </td>
                   </tr>
                 ) : (
-                  data?.data.map((user) => (
+                  filteredData?.data.map((user) => (
                     <tr key={user.id} className="border-b border-border transition-colors hover:bg-muted/50">
                       <td className="p-4 align-middle">
                         <div className="flex items-center space-x-3">

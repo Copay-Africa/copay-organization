@@ -4,9 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Ca
 import { useUserStats, useTenants } from "../../hooks/useTenants";
 import { usePaymentStats } from "../../hooks/usePaymentStats";
 import { useComplaintStats } from "../../hooks/useComplaintStats";
+import { useRoomStats } from "../../hooks/useRooms";
+import { getCooperativeId } from "../../lib/authClient";
 import { Badge } from "../../components/ui/Badge";
 import { Skeleton } from "../../components/ui/Skeleton";
-import { Users, DollarSign, AlertCircle, TrendingUp, Activity, Clock } from "lucide-react";
+import { Users, DollarSign, AlertCircle, TrendingUp, Activity, Clock, Building, BedDouble, Home, Wrench } from "lucide-react";
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('en-RW', {
@@ -58,16 +60,25 @@ export default function DashboardPage() {
   const { data: userStats, isLoading: userStatsLoading } = useUserStats();
   const { data: paymentStats, isLoading: paymentStatsLoading } = usePaymentStats();
   const { data: complaintStats, isLoading: complaintStatsLoading } = useComplaintStats();
+  const { data: roomStats, isLoading: roomStatsLoading } = useRoomStats();
+  
+  // Get current cooperative context
+  const cooperativeId = getCooperativeId();
   
   // Also fetch tenants directly to get accurate count
   const { data: tenantsData, isLoading: tenantsLoading } = useTenants({ 
-    role: "TENANT", 
-    limit: 100 // Get more data to ensure we capture all tenants
+    limit: 100, // Get more data to ensure we capture all users
   });
+  
+  // Filter tenants on client side
+  const tenants = React.useMemo(() => {
+    if (!tenantsData?.data) return [];
+    return tenantsData.data.filter(user => user.role === 'TENANT');
+  }, [tenantsData]);
   
   // Also fetch all users to see the difference
   const { data: allUsersData } = useTenants({ 
-    limit: 100 // Get all users without role filter
+    limit: 100, // Get all users without any filters
   });
 
   // Debug logging for user stats
@@ -78,10 +89,11 @@ export default function DashboardPage() {
       console.log('userStats.totalTenants:', userStats.totalTenants);
     }
     if (tenantsData) {
-      console.log('tenantsData from /users?role=TENANT:', tenantsData);
+      console.log('tenantsData from /users:', tenantsData);
       console.log('tenantsData.meta.total:', tenantsData.meta.total);
       console.log('tenantsData.data length:', tenantsData.data.length);
-      console.log('First few tenants:', tenantsData.data.slice(0, 3));
+      console.log('Filtered tenants:', tenants.length);
+      console.log('First few tenants:', tenants.slice(0, 3));
     }
     if (allUsersData) {
       console.log('allUsersData from /users (no filter):', allUsersData);
@@ -95,13 +107,13 @@ export default function DashboardPage() {
       );
     }
     console.log('=== END DEBUG ===');
-  }, [userStats, tenantsData, allUsersData]);
+  }, [userStats, tenantsData, allUsersData, tenants]);
 
-  // Use the direct tenant count if available and valid, fallback to userStats
+  // Use the client-side filtered tenant count
   const getTenantCount = () => {
-    // If we have tenant data and it's not loading, use that count
-    if (tenantsData && !tenantsLoading) {
-      return tenantsData.meta.total;
+    // Use the filtered tenants count if available
+    if (tenants.length > 0) {
+      return tenants.length;
     }
     
     // If we have all users data, manually count tenants
@@ -169,6 +181,41 @@ export default function DashboardPage() {
           change={`${complaintStats?.summary.totalComplaints || 0} total`}
           icon={AlertCircle}
           isLoading={complaintStatsLoading}
+        />
+      </div>
+
+      {/* Room Statistics */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Total Rooms"
+          value={roomStats?.total || 0}
+          change={`${roomStats?.occupancyRate ? Math.round(roomStats.occupancyRate) : 0}% occupancy rate`}
+          icon={Building}
+          isLoading={roomStatsLoading}
+        />
+        
+        <StatCard
+          title="Available Rooms"
+          value={roomStats?.available || 0}
+          change={`${roomStats?.occupied || 0} currently occupied`}
+          icon={Home}
+          isLoading={roomStatsLoading}
+        />
+        
+        <StatCard
+          title="Occupied Rooms"
+          value={roomStats?.occupied || 0}
+          change={`${roomStats?.available || 0} available for rent`}
+          icon={BedDouble}
+          isLoading={roomStatsLoading}
+        />
+        
+        <StatCard
+          title="Rooms Needing Attention"
+          value={(roomStats?.maintenance || 0) + (roomStats?.outOfService || 0)}
+          change={`${roomStats?.maintenance || 0} maintenance, ${roomStats?.outOfService || 0} out of service`}
+          icon={Wrench}
+          isLoading={roomStatsLoading}
         />
       </div>
 
@@ -384,6 +431,63 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Quick Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a
+              href="/rooms"
+              className="flex items-center gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors group"
+            >
+              <Building className="h-8 w-8 text-blue-600 group-hover:text-blue-700" />
+              <div>
+                <div className="font-semibold">Manage Rooms</div>
+                <div className="text-sm text-muted-foreground">Set room rates in RWF</div>
+              </div>
+            </a>
+            
+            <a
+              href="/dashboard/tenants"
+              className="flex items-center gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors group"
+            >
+              <Users className="h-8 w-8 text-green-600 group-hover:text-green-700" />
+              <div>
+                <div className="font-semibold">Manage Tenants</div>
+                <div className="text-sm text-muted-foreground">View tenant list</div>
+              </div>
+            </a>
+            
+            <a
+              href="/dashboard/payments"
+              className="flex items-center gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors group"
+            >
+              <DollarSign className="h-8 w-8 text-purple-600 group-hover:text-purple-700" />
+              <div>
+                <div className="font-semibold">View Payments</div>
+                <div className="text-sm text-muted-foreground">Track RWF payments</div>
+              </div>
+            </a>
+            
+            <a
+              href="/dashboard/complaints"
+              className="flex items-center gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors group"
+            >
+              <AlertCircle className="h-8 w-8 text-orange-600 group-hover:text-orange-700" />
+              <div>
+                <div className="font-semibold">Handle Complaints</div>
+                <div className="text-sm text-muted-foreground">Manage issues</div>
+              </div>
+            </a>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
