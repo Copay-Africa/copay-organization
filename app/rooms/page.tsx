@@ -1,7 +1,7 @@
 import RoomsManagement from "../../components/rooms/RoomsManagement";
 
 export const metadata = {
-  title: "Rooms - CoPay Organization",
+  title: "Rooms - Copay Organization",
   description: "Manage rooms, assignments, and availability",
 };
 

@@ -1,27 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "../components/Providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap", // Improve loading performance
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
-  title: "CoPay Organization",
+  title: "Copay Organization",
   description: "Modern cooperative payment management system",
   keywords: ["cooperative", "payment", "management", "finance", "organization"],
-  authors: [{ name: "CoPay Team" }],
-  creator: "CoPay Organization",
-  publisher: "CoPay Organization",
+  authors: [{ name: "Copay Team" }],
+  creator: "Copay Organization",
+  publisher: "Copay Organization",
   robots: {
     index: false, // Don't index in search engines for security
     follow: false,
@@ -43,8 +37,16 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false, // Prevent zoom for security
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover',
+  themeColor: [{
+    media: '(prefers-color-scheme: light)',
+    color: '#ffffff'
+  }, {
+    media: '(prefers-color-scheme: dark)',
+    color: '#1E2329'
+  }]
 };
 
 export default function RootLayout({
@@ -78,7 +80,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} font-inter antialiased`}
         suppressHydrationWarning
       >
         <Providers>{children}</Providers>

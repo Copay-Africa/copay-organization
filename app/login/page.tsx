@@ -1,7 +1,7 @@
 import LoginForm from "../../components/auth/LoginForm";
 
 export const metadata = {
-  title: "Sign In - CoPay Organization",
+  title: "Sign In - Copay Organization",
   description: "Sign in to your cooperative management account",
 };
 

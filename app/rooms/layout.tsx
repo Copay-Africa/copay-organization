@@ -3,7 +3,7 @@ import Topbar from "../../components/layout/Topbar";
 import Sidebar from "../../components/layout/Sidebar";
 
 export const metadata = {
-  title: "Rooms - CoPay Organization",
+  title: "Rooms - Copay Organization",
 };
 
 export default function RoomsLayout({ children }: { children: React.ReactNode }) {
@@ -13,7 +13,7 @@ export default function RoomsLayout({ children }: { children: React.ReactNode })
       <div className="flex">
         <Sidebar />
         <main className="flex-1 overflow-hidden">
-          <div className="container max-w-screen-2xl mx-auto p-6 md:p-8 lg:p-10">
+          <div className="container max-w-screen-2xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 xl:p-10">
             {children}
           </div>
         </main>

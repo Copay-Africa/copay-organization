@@ -32,22 +32,22 @@ function StatCard({
   isLoading?: boolean;
 }) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+    <Card className="hover:shadow-md transition-shadow duration-200">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 sm:px-6 pt-4 sm:pt-6">
+        <CardTitle className="text-xs sm:text-sm font-medium leading-tight">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
         {isLoading ? (
           <div className="space-y-2">
-            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-7 sm:h-8 w-20" />
             <Skeleton className="h-4 w-32" />
           </div>
         ) : (
           <>
-            <div className="text-2xl font-bold">{value}</div>
+            <div className="text-xl sm:text-2xl font-bold leading-tight">{value}</div>
             {change && (
-              <p className="text-xs text-muted-foreground">{change}</p>
+              <p className="text-xs text-muted-foreground mt-1">{change}</p>
             )}
           </>
         )}
@@ -134,17 +134,17 @@ export default function DashboardPage() {
   const tenantCount = getTenantCount();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Overview of your cooperative management system
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Tenants"
           value={userStatsLoading && tenantsLoading ? "Loading..." : tenantCount.toLocaleString()}
@@ -185,7 +185,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Room Statistics */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Rooms"
           value={roomStats?.total || 0}
@@ -220,7 +220,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Detailed Sections */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
         {/* User Overview */}
         <Card>
           <CardHeader>
@@ -441,7 +441,7 @@ export default function DashboardPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <a
               href="/rooms"
               className="flex items-center gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors group"
