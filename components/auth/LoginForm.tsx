@@ -83,7 +83,7 @@ export default function LoginForm() {
           <p className="text-muted-foreground text-sm">Cooperative Management System</p>
         </div>
 
-        <Card className="shadow-xl border-0 bg-card/50 backdrop-blur-sm">
+        <Card className="shadow-none border-0 bg-card/50 backdrop-blur-sm">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-semibold tracking-tight">
               Welcome back
