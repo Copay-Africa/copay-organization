@@ -12,7 +12,7 @@ import {
   SheetClose
 } from "../ui/Sheet";
 import { Button } from "../ui/Button";
-import { Menu, Home, Users, Building, CreditCard, AlertCircle, X } from "lucide-react";
+import { Menu, Home, Users, Building, CreditCard, AlertCircle, Settings, X } from "lucide-react";
 
 const items = [
   {
@@ -39,6 +39,11 @@ const items = [
     href: "/dashboard/complaints",
     label: "Complaints",
     icon: AlertCircle
+  },
+  {
+    href: "/dashboard/settings",
+    label: "Settings",
+    icon: Settings
   }
 ];
 

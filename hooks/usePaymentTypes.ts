@@ -1,59 +1,18 @@
 "use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getToken } from "../lib/authClient";
+import type { 
+  PaymentType, 
+  PaymentTypesResponse, 
+  PaymentTypeFilters, 
+  CreatePaymentTypeBody 
+} from "@/types/paymentTypes";
 
-export type PaymentType = {
-  id: string;
-  name: string;
-  description?: string;
-  amount: number;
-  amountType: 'FIXED' | 'VARIABLE';
-  isActive: boolean;
-  allowPartialPayment: boolean;
-  minimumAmount?: number;
-  dueDay?: number;
-  isRecurring: boolean;
-  cooperativeId: string;
-  settings?: Record<string, unknown>;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type PaymentTypesResponse = {
-  data: PaymentType[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-};
-
-export type PaymentTypeFilters = {
-  cooperativeId: string; // Required according to API docs
-  page?: number;
-  limit?: number;
-  search?: string;
-  includeInactive?: boolean;
-};
-
-export type CreatePaymentTypeBody = {
-  name: string;
-  description?: string;
-  amount: number;
-  amountType: 'FIXED' | 'VARIABLE';
-  allowPartialPayment?: boolean;
-  minimumAmount?: number;
-  dueDay?: number;
-  isRecurring?: boolean;
-  isActive?: boolean;
-};
-
-async function fetchPaymentTypes(filters: PaymentTypeFilters) {
+async function fetchPaymentTypes(cooperativeId: string, filters: PaymentTypeFilters = {}) {
   const token = getToken();
-  const params = new URLSearchParams();
+  const params = new URLSearchParams({
+    cooperativeId,
+  });
   
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
@@ -62,9 +21,10 @@ async function fetchPaymentTypes(filters: PaymentTypeFilters) {
   });
 
   const base = process.env.NEXT_PUBLIC_API_BASE ?? "";
+  const queryString = params.toString() ? `?${params.toString()}` : '';
   const url = base 
-    ? `${base.replace(/\/$/, "")}/payment-types?${params.toString()}` 
-    : `/payment-types?${params.toString()}`;
+    ? `${base.replace(/\/$/, "")}/payment-types${queryString}` 
+    : `/payment-types${queryString}`;
 
   const res = await fetch(url, {
     headers: {
@@ -171,11 +131,86 @@ async function createPaymentType(body: CreatePaymentTypeBody) {
   return data;
 }
 
-export function usePaymentTypes(filters: PaymentTypeFilters) {
+async function updatePaymentTypeStatus(id: string, isActive: boolean) {
+  const token = getToken();
+  const base = process.env.NEXT_PUBLIC_API_BASE ?? "";
+  const url = base 
+    ? `${base.replace(/\/$/, "")}/payment-types/${id}/status` 
+    : `/payment-types/${id}/status`;
+
+  const res = await fetch(url, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ isActive }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Failed to update payment type status: ${res.status}`);
+  }
+
+  const data = (await res.json()) as PaymentType;
+  return data;
+}
+
+async function updatePaymentType(id: string, body: Partial<CreatePaymentTypeBody>) {
+  const token = getToken();
+  const base = process.env.NEXT_PUBLIC_API_BASE ?? "";
+  const url = base 
+    ? `${base.replace(/\/$/, "")}/payment-types/${id}` 
+    : `/payment-types/${id}`;
+
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Failed to update payment type: ${res.status}`);
+  }
+
+  const data = (await res.json()) as PaymentType;
+  return data;
+}
+
+async function deletePaymentType(id: string) {
+  const token = getToken();
+  const base = process.env.NEXT_PUBLIC_API_BASE ?? "";
+  const url = base 
+    ? `${base.replace(/\/$/, "")}/payment-types/${id}` 
+    : `/payment-types/${id}`;
+
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Failed to delete payment type: ${res.status}`);
+  }
+
+  return { success: true };
+}
+
+export function usePaymentTypes(cooperativeId: string, filters: PaymentTypeFilters = {}) {
   return useQuery<PaymentTypesResponse, Error>({
-    queryKey: ["paymentTypes", filters],
-    queryFn: () => fetchPaymentTypes(filters),
-    enabled: !!filters.cooperativeId, // Only run query if cooperativeId is provided
+    queryKey: ["paymentTypes", cooperativeId, filters],
+    queryFn: () => fetchPaymentTypes(cooperativeId, filters),
+    enabled: !!cooperativeId, // Only run query if cooperativeId is provided
     staleTime: 1000 * 60, // 1 minute
   });
 }
@@ -212,6 +247,55 @@ export function useCreatePaymentType() {
         ["paymentType", newPaymentType.id, newPaymentType.cooperativeId], 
         newPaymentType
       );
+    },
+  });
+}
+
+export function useUpdatePaymentTypeStatus() {
+  const queryClient = useQueryClient();
+  
+  return useMutation<PaymentType, Error, { id: string; isActive: boolean }>({
+    mutationFn: ({ id, isActive }) => updatePaymentTypeStatus(id, isActive),
+    onSuccess: (updatedPaymentType) => {
+      // Invalidate and refetch payment types list
+      queryClient.invalidateQueries({ queryKey: ["paymentTypes"] });
+      queryClient.invalidateQueries({ queryKey: ["activePaymentTypes"] });
+      // Update the payment type in cache
+      queryClient.setQueryData(
+        ["paymentType", updatedPaymentType.id, updatedPaymentType.cooperativeId], 
+        updatedPaymentType
+      );
+    },
+  });
+}
+
+export function useUpdatePaymentType() {
+  const queryClient = useQueryClient();
+  
+  return useMutation<PaymentType, Error, { id: string; body: Partial<CreatePaymentTypeBody> }>({
+    mutationFn: ({ id, body }) => updatePaymentType(id, body),
+    onSuccess: (updatedPaymentType) => {
+      // Invalidate and refetch payment types list
+      queryClient.invalidateQueries({ queryKey: ["paymentTypes"] });
+      queryClient.invalidateQueries({ queryKey: ["activePaymentTypes"] });
+      // Update the payment type in cache
+      queryClient.setQueryData(
+        ["paymentType", updatedPaymentType.id, updatedPaymentType.cooperativeId], 
+        updatedPaymentType
+      );
+    },
+  });
+}
+
+export function useDeletePaymentType() {
+  const queryClient = useQueryClient();
+  
+  return useMutation<{ success: boolean }, Error, string>({
+    mutationFn: (id: string) => deletePaymentType(id),
+    onSuccess: () => {
+      // Invalidate and refetch payment types list
+      queryClient.invalidateQueries({ queryKey: ["paymentTypes"] });
+      queryClient.invalidateQueries({ queryKey: ["activePaymentTypes"] });
     },
   });
 }

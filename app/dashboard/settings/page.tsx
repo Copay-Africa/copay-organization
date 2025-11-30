@@ -1,13 +1,18 @@
-import React from "react";
-import { Card } from "../../../components/ui/Card";
+'use client';
+
+import { OrganizationSettings } from '@/components/settings/OrganizationSettings';
+import { getCooperativeId } from '@/lib/authClient';
 
 export default function SettingsPage() {
-  return (
-    <div>
-      <h2 className="text-2xl font-semibold mb-4">Settings</h2>
-      <Card>
-        <p>Organization settings, billing details, integrations.</p>
-      </Card>
-    </div>
-  );
+  const organizationId = getCooperativeId();
+
+  if (!organizationId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Please log in to access settings</p>
+      </div>
+    );
+  }
+
+  return <OrganizationSettings organizationId={organizationId} />;
 }

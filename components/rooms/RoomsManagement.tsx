@@ -137,12 +137,12 @@ export default function RoomsManagement() {
           <CardTitle className="text-lg">Search & Filter</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex-1 min-w-[200px]">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex-1 min-w-0">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by room number, type, or description..."
+                  placeholder="Search rooms..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -150,33 +150,35 @@ export default function RoomsManagement() {
               </div>
             </div>
             
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                {ROOM_STATUSES.map(status => (
-                  <SelectItem key={status} value={status}>
-                    {status.replace('_', ' ')}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2 sm:gap-4">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-[130px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {ROOM_STATUSES.map(status => (
+                    <SelectItem key={status} value={status}>
+                      {status.replace('_', ' ')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Select value={roomTypeFilter} onValueChange={setRoomTypeFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Room Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="1BR">1 Bedroom</SelectItem>
-                <SelectItem value="2BR">2 Bedroom</SelectItem>
-                <SelectItem value="3BR">3 Bedroom</SelectItem>
-                <SelectItem value="Studio">Studio</SelectItem>
-                <SelectItem value="Penthouse">Penthouse</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select value={roomTypeFilter} onValueChange={setRoomTypeFilter}>
+                <SelectTrigger className="w-full sm:w-[130px]">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="1BR">1 Bedroom</SelectItem>
+                  <SelectItem value="2BR">2 Bedroom</SelectItem>
+                  <SelectItem value="3BR">3 Bedroom</SelectItem>
+                  <SelectItem value="Studio">Studio</SelectItem>
+                  <SelectItem value="Penthouse">Penthouse</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -190,13 +192,29 @@ export default function RoomsManagement() {
 
       {/* Rooms Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="h-32 w-full mb-4" />
-                <Skeleton className="h-4 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
+            <Card key={i} className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="p-3 sm:p-4 border-b">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <Skeleton className="h-5 w-16 mb-1" />
+                      <Skeleton className="h-4 w-12" />
+                    </div>
+                    <Skeleton className="h-6 w-20" />
+                  </div>
+                </div>
+                <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <div className="flex gap-1">
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-5 w-20" />
+                  </div>
+                  <Skeleton className="h-10 w-full" />
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -220,25 +238,27 @@ export default function RoomsManagement() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {data?.data.map((room) => (
-            <Card key={room.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card key={room.id} className="overflow-hidden hover:shadow-md hover:scale-[1.02] transition-all duration-200 active:scale-95">
               <CardContent className="p-0">
                 {/* Room Header */}
-                <div className="p-4 border-b">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-lg">{room.roomNumber}</h3>
-                      <p className="text-sm text-muted-foreground">{room.roomType}</p>
+                <div className="p-3 sm:p-4 border-b">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-base sm:text-lg truncate">{room.roomNumber}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{room.roomType}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={STATUS_COLORS[room.status]}>
-                        {room.status.replace('_', ' ')}
+                    <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                      <Badge className={`${STATUS_COLORS[room.status]} text-xs px-2 py-1`}>
+                        <span className="hidden xs:inline">{room.status.replace('_', ' ')}</span>
+                        <span className="xs:hidden">{room.status.split('_')[0]}</span>
                       </Badge>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Room actions</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -276,40 +296,48 @@ export default function RoomsManagement() {
                 </div>
 
                 {/* Room Details */}
-                <div className="p-4 space-y-3">
+                <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
                   {(room.floor || room.block) && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {[room.block, room.floor].filter(Boolean).join(', ')}
+                    <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                      <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1 shrink-0" />
+                      <span className="truncate">{[room.block, room.floor].filter(Boolean).join(', ')}</span>
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center text-sm font-medium">
-                      <DollarSign className="h-4 w-4 mr-1" />
-                      {new Intl.NumberFormat('en-RW', {
-                        style: 'currency',
-                        currency: 'RWF',
-                        minimumFractionDigits: 0,
-                      }).format(room.baseRent)}/month
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center text-xs sm:text-sm font-medium min-w-0">
+                      <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 mr-1 shrink-0" />
+                      <span className="truncate">
+                        {new Intl.NumberFormat('en-RW', {
+                          style: 'currency',
+                          currency: 'RWF',
+                          minimumFractionDigits: 0,
+                        }).format(room.baseRent)}
+                        <span className="hidden xs:inline">/month</span>
+                        <span className="xs:hidden">/mo</span>
+                      </span>
                     </div>
                     {room.specifications?.squareFeet && (
-                      <div className="text-sm text-muted-foreground">
-                        {room.specifications.squareFeet} sq ft
+                      <div className="text-xs sm:text-sm text-muted-foreground shrink-0">
+                        {room.specifications.squareFeet} <span className="hidden xs:inline">sq ft</span><span className="xs:hidden">ft²</span>
                       </div>
                     )}
                   </div>
 
                   {room.currentTenant && (
-                    <div className="bg-muted p-3 rounded-lg">
+                    <div className="bg-muted p-2 sm:p-3 rounded-lg">
                       <div className="flex items-center gap-2">
-                        <BedDouble className="h-4 w-4 text-primary" />
-                        <div>
-                          <p className="text-sm font-medium">
+                        <BedDouble className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-medium truncate">
                             {room.currentTenant.firstName} {room.currentTenant.lastName}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Since {new Date(room.currentTenant.assignedAt).toLocaleDateString()}
+                            Since {new Date(room.currentTenant.assignedAt).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric',
+                              year: '2-digit'
+                            })}
                           </p>
                         </div>
                       </div>
@@ -318,21 +346,36 @@ export default function RoomsManagement() {
 
                   {room.specifications?.amenities && room.specifications.amenities.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {room.specifications.amenities.slice(0, 3).map((amenity) => (
-                        <Badge key={amenity} variant="secondary" className="text-xs">
-                          {amenity}
-                        </Badge>
-                      ))}
-                      {room.specifications.amenities.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{room.specifications.amenities.length - 3}
-                        </Badge>
-                      )}
+                      {/* Show 3 amenities on sm+ screens, 2 on smaller screens */}
+                      <div className="flex flex-wrap gap-1 sm:hidden">
+                        {room.specifications.amenities.slice(0, 2).map((amenity) => (
+                          <Badge key={amenity} variant="secondary" className="text-xs px-2 py-1">
+                            {amenity}
+                          </Badge>
+                        ))}
+                        {room.specifications.amenities.length > 2 && (
+                          <Badge variant="secondary" className="text-xs px-2 py-1">
+                            +{room.specifications.amenities.length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="hidden sm:flex sm:flex-wrap sm:gap-1">
+                        {room.specifications.amenities.slice(0, 3).map((amenity) => (
+                          <Badge key={amenity} variant="secondary" className="text-xs px-2 py-1">
+                            {amenity}
+                          </Badge>
+                        ))}
+                        {room.specifications.amenities.length > 3 && (
+                          <Badge variant="secondary" className="text-xs px-2 py-1">
+                            +{room.specifications.amenities.length - 3}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   )}
 
                   {room.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                       {room.description}
                     </p>
                   )}
