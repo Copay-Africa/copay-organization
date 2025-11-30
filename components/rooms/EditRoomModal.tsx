@@ -117,7 +117,7 @@ export default function EditRoomModal({ room, isOpen, onClose }: EditRoomModalPr
       });
       onClose();
     } catch (error) {
-      console.error('Error updating room:', error);
+
     }
   };
 

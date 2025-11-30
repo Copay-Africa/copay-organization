@@ -33,8 +33,7 @@ async function fetchRooms(filters: RoomFilters = {}) {
 
   const url = `${getApiBase()}/rooms?${params.toString()}`;
 
-  console.log("🏠 Fetching rooms from:", url);
-  console.log("🏠 Filters applied:", filters);
+
 
   const res = await fetch(url, {
     headers: {
@@ -49,7 +48,7 @@ async function fetchRooms(filters: RoomFilters = {}) {
   }
 
   const data = (await res.json()) as RoomsResponse;
-  console.log("🏠 API Response:", data);
+
   return data;
 }
 
@@ -190,7 +189,7 @@ async function fetchRoomStats() {
   const cooperativeId = getCooperativeId();
   const url = `${getApiBase()}/rooms/stats${cooperativeId ? `?cooperativeId=${cooperativeId}` : ''}`;
 
-  console.log("📊 Fetching room stats from:", url);
+
 
   const res = await fetch(url, {
     headers: {
@@ -205,7 +204,7 @@ async function fetchRoomStats() {
   }
 
   const data = (await res.json()) as RoomStats;
-  console.log("📊 Room stats response:", data);
+
   return data;
 }
 

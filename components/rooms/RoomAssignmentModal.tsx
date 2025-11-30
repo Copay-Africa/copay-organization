@@ -74,7 +74,7 @@ export default function RoomAssignmentModal({ room, isOpen, onClose }: RoomAssig
       onClose();
       resetForm();
     } catch (error) {
-      console.error('Error assigning room:', error);
+
       alert('Failed to assign room. The tenant may already have a room in this cooperative.');
     }
   };
@@ -108,7 +108,7 @@ export default function RoomAssignmentModal({ room, isOpen, onClose }: RoomAssig
       onClose();
       resetForm();
     } catch (error) {
-      console.error('Error unassigning room:', error);
+
       alert('Failed to unassign room.');
     }
   };
@@ -250,16 +250,6 @@ export default function RoomAssignmentModal({ room, isOpen, onClose }: RoomAssig
                     placeholder="Any additional notes about the assignment..."
                     rows={3}
                   />
-                </div>
-
-                {/* Assignment Info */}
-                <div className="bg-muted p-4 rounded-lg">
-                  <h4 className="font-medium mb-2">Assignment Rules</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Each tenant can have only one room per cooperative</li>
-                    <li>• Room status will automatically change to OCCUPIED</li>
-                    <li>• Assignment will be logged in the room's history</li>
-                  </ul>
                 </div>
 
                 {/* Form Actions */}

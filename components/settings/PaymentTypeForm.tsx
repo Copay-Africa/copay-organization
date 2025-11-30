@@ -63,7 +63,7 @@ export function PaymentTypeForm({ organizationId, paymentType, isOpen, onClose, 
             onSuccess?.();
             onClose();
         } catch (error) {
-            console.error("Failed to save payment type:", error);
+
         }
     };
 

@@ -65,7 +65,7 @@ export default function RoomsManagement() {
       ...(roomTypeFilter !== "all" && { roomType: roomTypeFilter }),
     };
     
-    console.log('Rooms filters:', filterObj);
+
     return filterObj;
   }, [currentPage, searchTerm, statusFilter, roomTypeFilter]);
 
@@ -77,7 +77,7 @@ export default function RoomsManagement() {
       try {
         await deleteRoomMutation.mutateAsync(roomId);
       } catch (err) {
-        console.error('Delete room error:', err);
+
         alert('Failed to delete room. It may have active assignments or payment history.');
       }
     }

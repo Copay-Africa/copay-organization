@@ -201,7 +201,7 @@ function PaymentTypeCard({
         isActive: checked,
       });
     } catch (error) {
-      console.error('Error updating payment type status:', error);
+
     }
   };
 
@@ -301,7 +301,7 @@ function DeleteConfirmDialog({ paymentTypeId, organizationId, onClose }: DeleteC
       await deletePaymentType.mutateAsync(paymentTypeId);
       onClose();
     } catch (error) {
-      console.error('Error deleting payment type:', error);
+
     }
   };
 

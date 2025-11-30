@@ -38,7 +38,7 @@ export default function TenantsList() {
     };
     
     // Debug logging to see what filters are being applied
-    console.log('TenantsList filters:', filterObj);
+
     
     return filterObj;
   }, [currentPage, searchTerm, statusFilter, cooperativeId]);
@@ -69,9 +69,7 @@ export default function TenantsList() {
   // Debug logging to see what data is returned
   React.useEffect(() => {
     if (filteredData) {
-      console.log('TenantsList filtered data:', filteredData);
-      console.log('Total count:', filteredData.meta.total);
-      console.log('Users with roles:', filteredData.data.map(u => ({ id: u.id, role: u.role, firstName: u.firstName })));
+
     }
   }, [filteredData]);
   const updateUserStatusMutation = useUpdateUserStatus();

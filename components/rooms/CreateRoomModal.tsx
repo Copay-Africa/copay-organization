@@ -129,7 +129,7 @@ export default function CreateRoomModal({ isOpen, onClose }: CreateRoomModalProp
       onClose();
       resetForm();
     } catch (error) {
-      console.error('Error creating room:', error);
+
       alert('Failed to create room. Please try again.');
     }
   };

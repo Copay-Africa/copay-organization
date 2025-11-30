@@ -82,32 +82,6 @@ export default function DashboardPage() {
   });
 
   // Debug logging for user stats
-  React.useEffect(() => {
-    console.log('=== DASHBOARD DEBUG ===');
-    if (userStats) {
-      console.log('userStats from /users/stats:', userStats);
-      console.log('userStats.totalTenants:', userStats.totalTenants);
-    }
-    if (tenantsData) {
-      console.log('tenantsData from /users:', tenantsData);
-      console.log('tenantsData.meta.total:', tenantsData.meta.total);
-      console.log('tenantsData.data length:', tenantsData.data.length);
-      console.log('Filtered tenants:', tenants.length);
-      console.log('First few tenants:', tenants.slice(0, 3));
-    }
-    if (allUsersData) {
-      console.log('allUsersData from /users (no filter):', allUsersData);
-      console.log('allUsersData.meta.total:', allUsersData.meta.total);
-      console.log('All users by role:', 
-        allUsersData.data.reduce((acc, user) => {
-          const role = user.role || 'NO_ROLE';
-          acc[role] = (acc[role] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>)
-      );
-    }
-    console.log('=== END DEBUG ===');
-  }, [userStats, tenantsData, allUsersData, tenants]);
 
   // Use the client-side filtered tenant count
   const getTenantCount = () => {
@@ -122,7 +96,6 @@ export default function DashboardPage() {
         user.role === 'TENANT' || user.role === 'tenant'
       ).length;
       if (tenantCount > 0) {
-        console.log('🔧 Using manual tenant count from all users:', tenantCount);
         return tenantCount;
       }
     }
